@@ -5,11 +5,11 @@ from sqlalchemy import create_engine
 from geoalchemy2 import Geometry
 
 # Database credentials (Modify these as needed)
-DB_USER = "geoda_user"
-DB_PASSWORD = "Atlanta123!"
-DB_NAME = "geoda_db"
-DB_HOST = "pgsql.dataconn.net"  # Use 'localhost' if running locally
-DB_PORT = "5432"  # Default PostgreSQL port is 5432
+DB_USER = ""
+DB_PASSWORD = ""
+DB_NAME = ""
+DB_HOST = ""  # Use 'localhost' if running locally
+DB_PORT = ""  # Default PostgreSQL port is 5432
 
 # Create database connection
 engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
