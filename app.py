@@ -12,16 +12,19 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pandas as pd
 import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
 
 app = Flask(__name__)
 
-# Database configuration
+# Database configuration using environment variables
 DB_CONFIG = {
-    "dbname": "geoda_db",
-    "user": "geoda_user",
-    "password": "Atlanta123!",
-    "host": "pgsql.dataconn.net",
-    "port": "5432"
+    "dbname": os.getenv("DB_NAME", "geoda_db"),
+    "user": os.getenv("DB_USER", "geoda_user"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST", "pgsql.dataconn.net"),
+    "port": os.getenv("DB_PORT", "5432")
 }
 
 def get_tables():
