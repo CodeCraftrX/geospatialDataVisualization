@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ table }} Data</title>
+</head>
+<body>
+    <h2>Data from Table: {{ table }}</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for item in row %}
+                        <td>{{ item }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="/">Back to Table Selection</a>
+</body>
+</html>
