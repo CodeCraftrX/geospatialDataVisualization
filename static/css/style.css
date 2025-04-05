@@ -1,30 +1,43 @@
-/* Form styling */
+/* Form container styling */
 form {
-    margin: 20px 0;
+    margin: 20px auto;
+    max-width: 600px;
+    text-align: center;
 }
 
 form div {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 select, input[type="checkbox"] {
     margin: 5px 0;
 }
 
+/* Select2 container styling */
+.select2-container {
+    width: 100% !important;
+    max-width: 400px;
+    margin: 5px auto;
+    text-align: left;
+}
+
+/* Button styling */
 button {
-    margin-top: 10px;
-    padding: 5px 15px;
+    margin-top: 20px;
+    padding: 8px 20px;
 }
 
 /* Map section */
 .map-display-section {
-    margin: 20px 0;
+    margin: 20px auto;
     padding: 20px;
+    max-width: 800px;
+    text-align: center;
 }
 
 #current-map {
     max-width: 100%;
-    margin: 20px 0;
+    margin: 20px auto;
 }
 
 /* Results table */
@@ -34,8 +47,9 @@ button {
 
 .maps-table {
     width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
     border-collapse: collapse;
-    margin-top: 20px;
 }
 
 .maps-table th,
@@ -68,8 +82,8 @@ body {
 }
 
 h2, h3 {
-    color: #333;
-    margin-top: 20px;
+    text-align: center;
+    margin: 20px 0;
 }
 
 label {
@@ -79,11 +93,6 @@ label {
 /* Add to your existing CSS */
 select[multiple] {
     width: 100%;
-    max-width: 300px;
-}
-
-.select2-container {
-    width: 100% !important;
     max-width: 300px;
 }
 

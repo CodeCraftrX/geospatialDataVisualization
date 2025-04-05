@@ -8,48 +8,42 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h2>Database Tables</h2>
+    <h2>Automated Geospatial Data Analysis and Visualization</h2>
 
     <form>
         <div>
-            <label><strong>Select the Table to perform the Visualization:</strong></label><br>
+            <label><strong>Select the Table to perform the Visualization</strong></label><br>
             <select name="table" id="tableSelect">
                 <option></option>
             </select>
         </div>
 
         <div>
-            <label><strong>Select Dependent Variable (Single):</strong></label><br>
+            <label><strong>Select Dependent Variable (Single)</strong></label><br>
             <select name="independent" id="independentSelect">
                 <option></option>
             </select>
         </div>
 
         <div>
-            <label><strong>Select Independent Variables (Multiple):</strong></label><br>
+            <label><strong>Select Independent Variables (Multiple)</strong></label><br>
             <select name="dependents" id="dependentsSelect" multiple size="5">
                 <option></option>
             </select>
         </div>
 
-        <button type="submit">Visualize</button>
+        <button type="submit">Generate Results and Maps</button>
     </form>
-
-    <!-- Map display section -->
-    <div class="map-display-section">
-        <h3>Current Map</h3>
-        <img id="current-map" src="" alt="Generated Map" style="display: none;">
-    </div>
 
     <!-- Results table -->
     <div class="results-section">
-        <h3>Generated Maps</h3>
+        <h3>Generated Results and Visualization Maps</h3>
         <table class="maps-table">
             <thead>
                 <tr>
                     <th>Map Name</th>
                     <th>Bandwidth</th>
-                    <th>Link</th>
+                    <th>Results</th>
                 </tr>
             </thead>
             <tbody id="maps-table-body">
