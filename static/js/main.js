@@ -27,47 +27,91 @@ $(document).ready(function() {
                 tableSelect.append(new Option(table, table));
             });
         });
+    
+    // Handle shapefile upload button click
+    $('#uploadShapefileBtn').on('click', function() {
+        const fileInput = document.getElementById('shapefileInput');
+        const files = fileInput.files;
+        
+        if (files.length === 0) {
+            document.getElementById('uploadStatus').innerHTML = 'Please select files first';
+            document.getElementById('uploadStatus').style.color = 'red';
+            return;
+        }
 
-    // Handle table selection change
-    $('#tableSelect').on('change', function() {
-        const selectedTable = $(this).val();
-        if (selectedTable) {
-            // Fetch columns for selected table
-            fetch(`/get-columns?table=${selectedTable}`)
-                .then(response => response.json())
-                .then(data => {
-                    const independentSelect = $('#independentSelect');
-                    const dependentsSelect = $('#dependentsSelect');
-                    
-                    // Clear existing options
-                    independentSelect.empty();
-                    dependentsSelect.empty();
-                    
-                    // Add empty option for placeholder
-                    independentSelect.append(new Option('', '', true, true));
-                    
-                    // Add columns to both dropdowns
-                    data.columns.forEach(column => {
-                        independentSelect.append(new Option(column, column));
-                        dependentsSelect.append(new Option(column, column));
-                    });
-                    
-                    // Trigger change to refresh Select2
-                    independentSelect.trigger('change');
-                    dependentsSelect.trigger('change');
-                });
+        const formData = new FormData();
+        for (let file of files) {
+            formData.append('files[]', file);
+        }
+        
+        const statusDiv = document.getElementById('uploadStatus');
+        statusDiv.innerHTML = 'Uploading...';
+        statusDiv.style.color = 'blue';
+        
+        fetch('/upload-shapefile', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                localStorage.setItem('shapefileDir', result.directory);
+                statusDiv.innerHTML = 'Shapefile uploaded successfully!';
+                statusDiv.style.color = 'green';
+                
+                // Enable the generate results button
+                $('.generate-button').prop('disabled', false);
+            } else {
+                statusDiv.innerHTML = 'Upload failed: ' + result.error;
+                statusDiv.style.color = 'red';
+                localStorage.removeItem('shapefileDir');
+            }
+        })
+        .catch(error => {
+            statusDiv.innerHTML = 'Upload failed: ' + error;
+            statusDiv.style.color = 'red';
+            localStorage.removeItem('shapefileDir');
+        });
+    });
+
+    // Show selected files
+    $('#shapefileInput').on('change', function(e) {
+        const fileCount = e.target.files.length;
+        const fileList = document.getElementById('selectedFiles');
+        if(fileCount > 0) {
+            const fileNames = Array.from(e.target.files).map(f => f.name).join(', ');
+            fileList.textContent = `Selected files: ${fileNames}`;
+        } else {
+            fileList.textContent = 'No files chosen';
         }
     });
 
-    // Handle form submission
-    $('form').on('submit', function(e) {
+    // Handle main visualization form submission
+    $('#visualizationForm').on('submit', function(e) {
         e.preventDefault();
         
         const table = $('#tableSelect').val();
         const independent = $('#independentSelect').val();
-        const dependents = $('#dependentsSelect').val();  // This gets the array of selected dependent variables
+        const dependents = $('#dependentsSelect').val();
 
-        fetch(`/visualize?table=${table}&independent=${independent}&dependents=${dependents.join(',')}`)
+        if (!table || !independent || !dependents || dependents.length === 0) {
+            alert('Please select all required fields');
+            return;
+        }
+
+        // Get shapefile directory if one was uploaded
+        const shapefileDir = localStorage.getItem('shapefileDir');
+        
+        // Build URL with parameters
+        let url = `/visualize?table=${table}&independent=${independent}&dependents=${dependents.join(',')}`;
+        if (shapefileDir) {
+            url += `&shapefile_dir=${shapefileDir}`;
+        }
+
+        // Show loading state
+        $('.generate-button').prop('disabled', true).text('Generating...');
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -149,8 +193,43 @@ $(document).ready(function() {
                         `);
                     }
                 }
+                $('.generate-button').prop('disabled', false).text('Generate Results and Maps');
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                $('.generate-button').prop('disabled', false).text('Generate Results and Maps');
+            });
+    });
+
+    // Handle table selection change
+    $('#tableSelect').on('change', function() {
+        const selectedTable = $(this).val();
+        if (selectedTable) {
+            // Fetch columns for selected table
+            fetch(`/get-columns?table=${selectedTable}`)
+                .then(response => response.json())
+                .then(data => {
+                    const independentSelect = $('#independentSelect');
+                    const dependentsSelect = $('#dependentsSelect');
+                    
+                    // Clear existing options
+                    independentSelect.empty();
+                    dependentsSelect.empty();
+                    
+                    // Add empty option for placeholder
+                    independentSelect.append(new Option('', '', true, true));
+                    
+                    // Add columns to both dropdowns
+                    data.columns.forEach(column => {
+                        independentSelect.append(new Option(column, column));
+                        dependentsSelect.append(new Option(column, column));
+                    });
+                    
+                    // Trigger change to refresh Select2
+                    independentSelect.trigger('change');
+                    dependentsSelect.trigger('change');
+                });
+        }
     });
 
     // Add this function to handle MGWR Summary display

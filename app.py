@@ -13,6 +13,9 @@ import matplotlib as mpl
 import pandas as pd
 import os
 from dotenv import load_dotenv
+import shutil
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -26,6 +29,17 @@ DB_CONFIG = {
     "host": os.getenv("DB_HOST", "pgsql.dataconn.net"),
     "port": os.getenv("DB_PORT", "5432")
 }
+
+# Add these configurations after creating the Flask app
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+ALLOWED_EXTENSIONS = {'shp', 'shx', 'dbf', 'prj', 'sbx', 'sbn', 'cpg'}  # Required shapefile components
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_tables():
     conn = psycopg2.connect(**DB_CONFIG)
@@ -128,6 +142,50 @@ def get_columns():
 MAPS_DIR = os.path.join('static', 'maps')
 os.makedirs(MAPS_DIR, exist_ok=True)
 
+@app.route("/upload-shapefile", methods=['POST'])
+def upload_shapefile():
+    try:
+        if 'files[]' not in request.files:
+            return jsonify({'error': 'No files provided'}), 400
+
+        files = request.files.getlist('files[]')
+        
+        # Create a unique directory for this upload
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], timestamp)
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        uploaded_files = []
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(upload_dir, filename)
+                file.save(filepath)
+                uploaded_files.append(filename)
+        
+        # Check if we have all required shapefile components
+        extensions = {f.split('.')[-1].lower() for f in uploaded_files}
+        required_extensions = {'shp', 'shx', 'dbf'}
+        
+        if not required_extensions.issubset(extensions):
+            # Clean up the upload directory if requirements not met
+            shutil.rmtree(upload_dir)
+            return jsonify({
+                'error': 'Missing required shapefile components. Need .shp, .shx, and .dbf files'
+            }), 400
+
+        return jsonify({
+            'success': True,
+            'directory': timestamp,
+            'files': uploaded_files
+        })
+
+    except Exception as e:
+        # Clean up on error
+        if 'upload_dir' in locals():
+            shutil.rmtree(upload_dir)
+        return jsonify({'error': str(e)}), 500
+
 @app.route("/visualize")
 def visualize():
     try:
@@ -135,6 +193,17 @@ def visualize():
         table_name = request.args.get("table")
         independent = request.args.get("independent")
         dependents = request.args.get("dependents").split(",")
+
+        # Check if a custom shapefile is specified
+        shapefile_dir = request.args.get('shapefile_dir')
+        if shapefile_dir:
+            # Use uploaded shapefile
+            shapefile_path = os.path.join(app.config['UPLOAD_FOLDER'], shapefile_dir)
+            shp_file = next(f for f in os.listdir(shapefile_path) if f.endswith('.shp'))
+            georgia_shp = gp.read_file(os.path.join(shapefile_path, shp_file))
+        else:
+            # Use default shapefile
+            georgia_shp = gp.read_file(ps.examples.get_path('G_utm.shp'))
 
         # Fetch data from database
         conn = psycopg2.connect(**DB_CONFIG)
@@ -170,7 +239,6 @@ def visualize():
         # Generate map
         map_file = os.path.join(MAPS_DIR, f"{table_name}_{independent}_map.png")
         fig, ax = plt.subplots(figsize=(10,10))
-        georgia_shp = gp.read_file(ps.examples.get_path('G_utm.shp'))
         georgia_shp.plot(ax=ax, edgecolor='black', facecolor='white')
         georgia_shp.centroid.plot(ax=ax, c='black')
         plt.savefig(map_file)

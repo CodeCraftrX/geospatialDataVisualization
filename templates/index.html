@@ -10,29 +10,47 @@
 <body>
     <h2>Automated Geospatial Data Analysis and Visualization</h2>
 
-    <form>
-        <div>
+    <form id="visualizationForm">
+        <!-- Table and variable selection -->
+        <div class="form-section">
             <label><strong>Select the Table to perform the Visualization</strong></label><br>
             <select name="table" id="tableSelect">
                 <option></option>
-            </select>
-        </div>
-
-        <div>
+            </select><br
+            
             <label><strong>Select Dependent Variable (Single)</strong></label><br>
             <select name="independent" id="independentSelect">
                 <option></option>
-            </select>
-        </div>
-
-        <div>
+            </select><br>
+            
             <label><strong>Select Independent Variables (Multiple)</strong></label><br>
-            <select name="dependents" id="dependentsSelect" multiple size="5">
+            <select name="dependents" id="dependentsSelect" multiple>
                 <option></option>
             </select>
         </div>
 
-        <button type="submit">Generate Results and Maps</button>
+        <!-- Shapefile upload section -->
+        <div class="shapefile-upload-section">
+            <h3>Upload Shapefile</h3>
+            <div class="form-group">
+                <label for="shapefileInput">Select Shapefile Components (.shp, .shx, .dbf, etc.)</label>
+                <input type="file" 
+                       id="shapefileInput" 
+                       name="files[]" 
+                       multiple 
+                       accept=".shp,.shx,.dbf,.prj,.sbx,.sbn,.cpg"
+                       class="form-control">
+                <label for="shapefileInput" class="custom-file-upload">
+                   
+                </label><br>
+                <div id="selectedFiles">No files chosen</div>
+                <button type="button" id="uploadShapefileBtn" class="btn-primary">Upload Shapefile</button>
+            </div>
+            <div id="uploadStatus"></div>
+        </div>
+
+        <!-- Generate Results button -->
+        <button type="submit" class="generate-button">Generate Results and Maps</button>
     </form>
 
     <!-- Results table -->
