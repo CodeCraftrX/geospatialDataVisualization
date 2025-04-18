@@ -7,6 +7,7 @@ from mgwr.sel_bw import Sel_BW
 from mgwr.utils import shift_colormap, truncate_colormap
 import geopandas as gp
 import matplotlib
+from datetime import datetime
 matplotlib.use('Agg')  # Use a non-interactive backend
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -335,10 +336,13 @@ MGWR MODEL RESULTS
         # Get filtered t-values for MGWR
         mgwr_filtered_t = mgwr_results.filter_tvals()
 
+        comparison_maps = []
+        timestamp = datetime.now().strftime("%Y_%m_%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+
         # Generate comparison maps for each variable
         comparison_maps = []
         for idx, var_name in enumerate(['intercept'] + dependents):
-            comparison_filename = f"{table_name}_{independent}_{var_name}_comparison_map.png"
+            comparison_filename = f"{table_name}_{independent}_{var_name}_comparison_map_{timestamp}.png"
             comparison_path = os.path.join(MAPS_DIR, comparison_filename)
             
             # Create comparison plots
